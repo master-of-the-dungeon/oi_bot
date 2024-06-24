@@ -36,6 +36,20 @@ async def fetch_open_interest_binance(session, symbol, semaphore):
                 print(f"Error fetching data from Binance for symbol {symbol}: {data}")
                 return []
 
+async def fetch_price_binance(session, symbol):
+    url = f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}"
+    async with session.get(url) as response:
+        if response.status != 200:
+            print(f"Error fetching price for {symbol}: HTTP {response.status}")
+            return None
+
+        try:
+            data = await response.json()
+            return float(data['price'])
+        except aiohttp.ContentTypeError:
+            print(f"ContentTypeError: Unexpected mimetype for {symbol}. URL: {url}")
+            return None
+
 def format_timestamp(timestamp, tz_info):
     # Преобразование из Unix времени в локальный формат YYYY-MM-DD HH:MM:SS
     dt = datetime.utcfromtimestamp(timestamp / 1000).replace(tzinfo=pytz.utc)
@@ -58,11 +72,13 @@ async def fetch_all_data():
 
         for symbol, open_interest_data_binance in zip(symbols, results):
             if len(open_interest_data_binance) == 4:  # Убедимся, что у нас есть четыре значения
+                price = await fetch_price_binance(session, symbol)
                 for record in open_interest_data_binance:
                     all_data_binance.append({
                         'platform': 'Binance',
                         'symbol': symbol,
-                        'open_interest': record['sumOpenInterest'],
+                        'open_interest': float(record['sumOpenInterest']),  # Преобразуем open_interest в float
+                        'price': price,
                         'timestamp': format_timestamp(int(record['timestamp']), local_tz)
                     })
 

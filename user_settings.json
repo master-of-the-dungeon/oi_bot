@@ -1,6 +1,6 @@
 {
     "579372261": {
-        "threshold": 0.1,
+        "threshold": 15.0,
         "interval": 5
     }
 }
