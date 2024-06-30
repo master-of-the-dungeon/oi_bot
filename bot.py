@@ -83,11 +83,13 @@ def check_oi_changes(df):
                 for user_id, settings in user_settings.items():
                     threshold = settings.get('threshold', 5)
                     if abs(change_5min) > threshold or abs(change_10min) > threshold or abs(change_15min) > threshold:
+                        symbol_url = f"https://www.binance.com/en/futures/{symbol}"
                         message = f"OI Change Alert for {symbol}:\n" \
                                   f"Current Price: {latest_price}\n" \
                                   f"5min change: {change_5min:.2f}% (OI: {latest_oi}, Price Change: {price_change_5min:.2f}%)\n" \
                                   f"10min change: {change_10min:.2f}% (OI: {oi_10min_ago}, Price Change: {price_change_10min:.2f}%)\n" \
-                                  f"15min change: {change_15min:.2f}% (OI: {oi_15min_ago}, Price Change: {price_change_15min:.2f}%)"
+                                  f"15min change: {change_15min:.2f}% (OI: {oi_15min_ago}, Price Change: {price_change_15min:.2f}%)\n" \
+                                  f"Link: {symbol_url}"
                         messages = split_message(message)
                         for msg in messages:
                             send_telegram_message(user_id, msg)
